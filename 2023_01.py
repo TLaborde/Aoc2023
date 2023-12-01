@@ -48,16 +48,8 @@ def part2(data):
         '9': 9
     }
     for line in data:
-        line = line.replace("oneight", "oneeight")
-        line = line.replace("twone", "twoone")
-        line = line.replace("sevenine", "sevennine")
-        line = line.replace("threeight", "threeeight")
-        line = line.replace("fiveight", "fiveeight")
-        line = line.replace("eightwo", "eighttwo")
-        line = line.replace("eighthree", "eightthree")
-        line = line.replace("nineight", "nineeight")
         numbers = re.findall(
-            r"(\d|one|two|three|four|five|six|seven|eight|nine)", line)
+            r"(?=(\d|one|two|three|four|five|six|seven|eight|nine))", line)
         if numbers[0] == '0':
             print(table[numbers[0]])
         if numbers[-1] == '0':
