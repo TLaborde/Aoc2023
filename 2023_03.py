@@ -18,8 +18,7 @@ def part1(data):
     total_sum = 0
     part_positions = {(i, match.start()) for i, line in enumerate(data) for match in re.finditer(r'[^\d|\.]', line)}
     for i, line in enumerate(data):
-        matches = re.finditer(r'\d+', line)
-        for match in matches:
+        for match in re.finditer(r'\d+', line):
             if any((y, x) in part_positions for x in range(match.start() - 1, match.end() + 1) for y in range(i - 1, i + 2)):
                 total_sum += int(match.group())
     return total_sum
