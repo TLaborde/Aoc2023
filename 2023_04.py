@@ -16,31 +16,26 @@ def parse(puzzle_input):
 
 def part1(data):
     """Solve part 1."""
-    sum = 0
+    total_winnings = 0
     for line in data:
-        discard, winning_numbers, number_i_have = re.split(r'\||:', line)
-        winning_numbers = set(winning_numbers.split())
-        number_i_have = set(number_i_have.split())
-        good = winning_numbers.intersection(number_i_have)
-        if good:
-            sum += 2 ** (len(good)-1)
-    return sum
+        _, winning_numbers, numbers_i_have = re.split(r'\||:', line)
+        common_numbers_count = len(set(winning_numbers.split()).intersection(
+            set(numbers_i_have.split())))
+        if common_numbers_count:
+            total_winnings += 2 ** (common_numbers_count - 1)
+    return total_winnings
 
 
 def part2(data):
     """Solve part 2."""
-    copies = {}
-    for i in range(1, len(data)+1):
-        copies[i] = 1
+    copies = {i: 1 for i in range(1, len(data)+1)}
     for i, line in enumerate(data):
-        discard, winning_numbers, number_i_have = re.split(r'\||:', line)
-        winning_numbers = set(winning_numbers.split())
-        number_i_have = set(number_i_have.split())
-        copy_count = len(winning_numbers.intersection(number_i_have))
+        _, winning_numbers, numbers_i_have = re.split(r'\||:', line)
+        copy_count = len(set(winning_numbers.split()).intersection(
+            set(numbers_i_have.split())))
         if copy_count:
-            for c in range(1, copy_count+1):
-                copies[i+1+c] += copies[i+1]
-                print(f"add {copies[i+1]} to {i+1+c}")
+            for c in range(copy_count):
+                copies[i+2+c] += copies[i+1]
     return sum(copies.values())
 
 
