@@ -11,6 +11,7 @@ def parse(puzzle_input):
     """Parse input."""
     data = [line for line in puzzle_input.split("\n")]
     tables = {}
+    tables_names = []
     _, rest = data[0].split(":")
     seeds = rest.split()
     for line in data[2:]:
@@ -18,10 +19,11 @@ def parse(puzzle_input):
             continue
         if ":" in line:
             category, _ = line.split(" ")
+            tables_names.append(category)
             tables[category] = []
         else:
             tables[category].append([int(x) for x in line.split(" ")])
-    return seeds, tables
+    return seeds, tables, tables_names
 
 
 def table_to_value(table, value):
@@ -35,12 +37,12 @@ def table_to_value(table, value):
 
 def part1(data):
     """Solve part 1."""
-    seeds, tables = data
+    seeds, tables, table_names = data
     min_loc = float('inf')
 
     for seed in seeds:
-        location = table_to_value(tables['seed-to-soil'], int(seed))
-        for table_name in ['soil-to-fertilizer', 'fertilizer-to-water', 'water-to-light', 'light-to-temperature', 'temperature-to-humidity', 'humidity-to-location']:
+        location = int(seed)
+        for table_name in table_names:
             location = table_to_value(tables[table_name], location)
         min_loc = min(min_loc, location)
 
@@ -84,12 +86,12 @@ def table_to_ranges(table, ranges):
 
 def part2(data):
     """Solve part 2."""
-    seeds, tables = data
+    seeds, tables, table_names = data
 
     ranges = [[int(seeds[i]), int(seeds[i]) + int(seeds[i+1]) - 1]
               for i in range(0, len(seeds), 2)]
 
-    for table_name in ['seed-to-soil', 'soil-to-fertilizer', 'fertilizer-to-water', 'water-to-light', 'light-to-temperature', 'temperature-to-humidity', 'humidity-to-location']:
+    for table_name in table_names:
         ranges = table_to_ranges(tables[table_name], ranges)
 
     return min(r[0] for r in ranges)
