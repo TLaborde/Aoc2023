@@ -1,7 +1,6 @@
 from aocd.models import Puzzle
 from aocd import submit
 import os
-from collections import defaultdict
 # import puzzle
 filename = os.path.basename(__file__)
 year, day = filename[:-3].split("_")[:2]
@@ -10,124 +9,88 @@ puzzle = Puzzle(year=int(year), day=int(day))
 
 def parse(puzzle_input):
     """Parse input."""
-    return [line for line in puzzle_input.split("\n")]
+    data = [line for line in puzzle_input.split("\n")]
+    return [x.split() for x in data]
 
 
 def hand_sort(hands):
-    types = {
-        'five_kind': [],
-        'four_kind': [],
-        'full': [],
-        'three_kind': [],
-        'two_pair': [],
-        'one_pair': [],
-        'high': []
-    }
+    types = [('five_kind', []), ('four_kind', []), ('full', []),
+             ('three_kind', []), ('two_pair', []), ('one_pair', []), ('high', [])]
     for hand in hands:
         cards = hand[0]
-        chars = defaultdict(int)
-        for char in cards:
-            chars[char] += 1
+        chars = {char: cards.count(char) for char in set(cards)}
         counts = list(chars.values())
         if 5 in counts:
-            types['five_kind'].append(hand)
+            types[0][1].append(hand)
             continue
         if 4 in counts:
-            types['four_kind'].append(hand)
+            types[1][1].append(hand)
             continue
         if 3 in counts and 2 in counts:
-            types['full'].append(hand)
+            types[2][1].append(hand)
             continue
         if 3 in counts:
-            types['three_kind'].append(hand)
+            types[3][1].append(hand)
             continue
         if 2 in [counts.count(n) for n in counts]:
-            types['two_pair'].append(hand)
+            types[4][1].append(hand)
             continue
         if 2 in counts:
-            types['one_pair'].append(hand)
+            types[5][1].append(hand)
             continue
-        types['high'].append(hand)
+        types[6][1].append(hand)
 
     alphabet = {c: i for i, c in enumerate("AKQJT98765432")}
-    return_val = []
-    for t in ['five_kind', 'four_kind', 'full', 'three_kind', 'two_pair', 'one_pair', 'high']:
-        return_val.extend(sorted(types[t], key=lambda word: [
-            alphabet.get(c, ord(c)) for c in word[0]]))
-
-    return return_val
+    return list(reversed(list(hand for _, hands in types for hand in sorted(hands, key=lambda word: tuple(alphabet.get(c, ord(c)) for c in word[0])))))
 
 
 def hand_sort2(hands):
-    types = {
-        'five_kind': [],
-        'four_kind': [],
-        'full': [],
-        'three_kind': [],
-        'two_pair': [],
-        'one_pair': [],
-        'high': []
-    }
+    types = [('five_kind', []), ('four_kind', []), ('full', []),
+             ('three_kind', []), ('two_pair', []), ('one_pair', []), ('high', [])]
     for hand in hands:
         cards = hand[0]
-        chars = defaultdict(int)
-        for char in cards:
-            chars[char] += 1
+        chars = {char: cards.count(char) for char in set(cards)}
         joker = chars.pop('J', 0)
-        counts = [0]
-        max_rep = 0
-        if chars.values():
-            counts = list(chars.values())
-            max_rep = max(counts)
+        counts = [0] if not chars.values() else list(chars.values())
+        max_rep = max(counts) if counts else 0
         if max_rep+joker == 5:
-            types['five_kind'].append(hand)
+            types[0][1].append(hand)
             continue
         if max_rep+joker == 4:
-            types['four_kind'].append(hand)
+            types[1][1].append(hand)
             continue
         if 3 in counts and 2 in counts or ([2, 2] == counts and joker == 1):
-            types['full'].append(hand)
+            types[2][1].append(hand)
             continue
         if 3 in counts or (2 in counts and joker == 1) or (joker == 2):
-            types['three_kind'].append(hand)
+            types[3][1].append(hand)
             continue
         if 2 in [counts.count(n) for n in counts]:
-            types['two_pair'].append(hand)
+            types[4][1].append(hand)
             continue
         if 2 in counts or joker == 1:
-            types['one_pair'].append(hand)
+            types[5][1].append(hand)
             continue
-        types['high'].append(hand)
-    for t in ['five_kind', 'four_kind', 'full', 'three_kind', 'two_pair', 'one_pair', 'high']:
-        print(t)
-        for val in types[t]:
-            print(val[0])
-    alphabet = {c: i for i, c in enumerate("AKQJT98765432J")}
-    return_val = []
-    for t in ['five_kind', 'four_kind', 'full', 'three_kind', 'two_pair', 'one_pair', 'high']:
-        return_val.extend(sorted(types[t], key=lambda word: [
-            alphabet.get(c, ord(c)) for c in word[0]]))
+        types[6][1].append(hand)
 
-    return return_val
+    alphabet = {c: i for i, c in enumerate("AKQJT98765432J")}
+
+    return list(reversed(list(hand for _, hands in types for hand in sorted(hands, key=lambda word: tuple(alphabet.get(c, ord(c)) for c in word[0])))))
 
 
 def part1(data):
     """Solve part 1."""
-    hands = [x.split(" ") for x in data]
-    sorted = hand_sort(hands)
-    result_sum = 0
-    for i, hand in enumerate(reversed(sorted)):
-        result_sum += (i+1) * int(hand[1])
+    sorted_hands = hand_sort(data)
+    result_sum = sum((i+1) * int(hand[1])
+                     for i, hand in enumerate(sorted_hands))
     return result_sum
 
 
 def part2(data):
     """Solve part 2."""
-    hands = [x.split(" ") for x in data]
-    sorted = hand_sort2(hands)
-    result_sum = 0
-    for i, hand in enumerate(reversed(sorted)):
-        result_sum += (i+1) * int(hand[1])
+    sorted_hands = hand_sort2(data)
+    result_sum = sum((i+1) * int(hand[1])
+                     for i, hand in enumerate(sorted_hands))
     return result_sum
 
 
