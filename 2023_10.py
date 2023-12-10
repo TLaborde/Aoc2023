@@ -11,51 +11,56 @@ puzzle = Puzzle(year=int(year), day=int(day))
 
 def parse(puzzle_input):
     """Parse input."""
-    data = [[i for i in line] for line in puzzle_input.split("\n")]
+    data = [list(line) for line in puzzle_input.split("\n")]
+
     mapping = defaultdict(list)
     start = None
+
     for x, line in enumerate(data):
         for y, cell in enumerate(line):
-            if cell == "|":
-                mapping[(x,y)] = [(x-1,y),(x+1,y)]
-            if cell == "-":
-                mapping[(x,y)] = [(x,y-1),(x,y+1)]
-            if cell == "L":
-                mapping[(x,y)] = [(x-1,y),(x,y+1)]
-            if cell == "J":
-                mapping[(x,y)] = [(x-1,y),(x,y-1)]
-            if cell == "7":
-                mapping[(x,y)] = [(x,y-1),(x+1,y)]
-            if cell == "F":
-                mapping[(x,y)] = [(x,y+1),(x+1,y)]
-            if cell == "S":
-                start = (x,y)
-    path = list()
-    path.append(start)
-    neighbours = [k for k,v in mapping.items() if start in v]
-    path.extend(neighbours)
+            if cell in "|-LJ7FS":
+                mapping[(x, y)] = [(x + dx, y + dy) for dx, dy in ((0, 1), (1, 0), (0, -1), (-1, 0))]
+
+                if cell == "|":
+                    mapping[(x, y)] = [(x - 1, y), (x + 1, y)]
+                elif cell == "-":
+                    mapping[(x, y)] = [(x, y - 1), (x, y + 1)]
+                elif cell == "L":
+                    mapping[(x, y)] = [(x - 1, y), (x, y + 1)]
+                elif cell == "J":
+                    mapping[(x, y)] = [(x - 1, y), (x, y - 1)]
+                elif cell == "7":
+                    mapping[(x, y)] = [(x, y - 1), (x + 1, y)]
+                elif cell == "F":
+                    mapping[(x, y)] = [(x, y + 1), (x + 1, y)]
+                elif cell == "S":
+                    start = (x, y)
+
+    path = [start]
+    neighbours = mapping[start]
+
     while neighbours:
-        neighbours = [i for n in neighbours for i in mapping[n]  if i not in path]
         path.extend(neighbours)
+        neighbours = [i for n in neighbours for i in mapping[n] if i not in path]
+
     return data, path
 
 
 def part1(data):
     """Solve part 1."""
     data, path = data
-
-    return int((len(path)-1)/2)
+    return int((len(path)-2)/2)
 
 
 def part2(data):
     """Solve part 2."""
-    data, path = data
+    _, path = data  # Unpack only the necessary variable
 
-    # clean the map
-    for x, line in enumerate(data):
-        for y, cell in enumerate(line):
-            if (x,y) not in path:
-                data[x][y] = "."
+    # Clean the map
+    data = [
+        [cell if (x, y) in path else "." for y, cell in enumerate(line)]
+        for x, line in enumerate(data)
+    ]
 
     outside_cells= 0
     for line in data:
