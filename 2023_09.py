@@ -10,51 +10,25 @@ puzzle = Puzzle(year=int(year), day=int(day))
 
 def parse(puzzle_input):
     """Parse input."""
-    data = puzzle_input.split("\n")
-    return data
+    return [[int(i) for i in line.split()] for line in puzzle_input.split("\n")]
 
-def solve_readings(readings):
+def solve_readings(readings, magic = -1):
+    """ recurcive solve."""
     if any(readings):
         # calculate diff
-        prev = readings[0]
-        b = [ ]
-        for i in readings[1:]:
-            b.append(i - prev)
-            prev = i
-        return b[-1] + solve_readings(b)
-    else:
-        return 0
-
-def solve_readings2(readings):
-    print(readings)
-    if any(readings):
-        prev = readings[0]
-        b = [ ]
-        for i in readings[1:]:
-            b.append(i - prev)
-            prev = i
-
-        return b[0] - solve_readings2(b)
+        new_readings = [i - prev for prev, i in zip(readings, readings[1:])]
+        return new_readings[magic] + (-2*magic-1) * solve_readings(new_readings, magic)
     else:
         return 0
 
 def part1(data):
     """Solve part 1."""
-    sum = 0
-    for line in data:
-        readings = [int(i) for i in line.split(" ")]
-        sum += readings[-1] + solve_readings(readings)
-    return sum
+    return sum(readings[-1] + solve_readings(readings) for readings in data)
 
 
 def part2(data):
     """Solve part 2."""
-    sum = 0
-    for line in data:
-        readings = [int(i) for i in line.split(" ")]
-        sum += readings[0] - solve_readings2(readings)
-        print(readings[0] - solve_readings2(readings))
-    return sum
+    return sum(readings[0] - solve_readings(readings,0) for readings in data)
 
 
 def solve(puzzle_input):
