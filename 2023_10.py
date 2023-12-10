@@ -48,13 +48,13 @@ def parse(puzzle_input):
 
 def part1(data):
     """Solve part 1."""
-    data, path = data
+    _, path = data
     return int((len(path)-2)/2)
 
 
 def part2(data):
     """Solve part 2."""
-    _, path = data  # Unpack only the necessary variable
+    data, path = data  # Unpack only the necessary variable
 
     # Clean the map
     data = [
@@ -64,13 +64,14 @@ def part2(data):
 
     outside_cells= 0
     for line in data:
-        inside = False
-        # replace any north/south with normal pipe, ignore u-bend
-        line = re.sub(r"F-*J|L-*7", "|", "".join(line))
+        up = False
+        down = False
         for cell in line:
-            if cell == "|":
-                inside = not inside
-            if inside and cell == ".":
+            if cell in ["J","L","|"]:
+                up = not up
+            if cell in ["F","7","|", "S"]: #S is a 7 on my input
+                down = not down
+            if up and down and cell == ".":
                 outside_cells += 1
     return outside_cells       
     
