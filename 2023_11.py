@@ -21,13 +21,13 @@ def part1(data):
     """Solve part 1."""
     # This function is not used in the final code since part2 is the generalized case
     empty_lines = [i for i, line in enumerate(
-        data) if re.match(r"^\.+$", line)]
+        data) if re.fullmatch(r"\.+", line)]
     # we insert by the end, so we don't mess the indices for insert...
     for l in reversed(empty_lines):
         data.insert(l, data[l])
     data = transpose(data)
     empty_lines = [i for i, line in enumerate(
-        data) if re.match(r"^\.+$", line)]
+        data) if re.fullmatch(r"\.+", line)]
     for l in reversed(empty_lines):
         data.insert(l, data[l])
     data = transpose(data)
@@ -41,21 +41,21 @@ def part1(data):
 def part2(data, space_factor=1000000):
     """Solve part 2."""
     empty_lines = [i for i, line in enumerate(
-        data) if re.match(r"^\.+$", line)]
+        data) if re.fullmatch(r"\.+", line)]
+
     data_transposed = transpose(data)
+
     empty_rows = [i for i, line in enumerate(
-        data_transposed) if re.match(r"^\.+$", line)]
+        data_transposed) if re.fullmatch(r"\.+", line)]
 
     galaxies = [(x, y) for x, line in enumerate(data)
                 for y, cell in enumerate(line) if cell == "#"]
-    pairs_dist = 0
-    for i, a in enumerate(galaxies):
-        for b in galaxies[i + 1:]:
-            spaces_between_the_stars = len([l for l in empty_rows if min(a[1], b[1]) < l < max(
-                a[1], b[1])]) + len([r for r in empty_lines if min(a[0], b[0]) < r < max(a[0], b[0])])
-            dist = abs(a[0]-b[0]) + abs(a[1]-b[1]) + \
-                spaces_between_the_stars * (space_factor - 1)
-            pairs_dist += dist
+
+    pairs_dist = sum(abs(a[0]-b[0]) + abs(a[1]-b[1]) +
+                     (len([l for l in empty_rows if min(a[1], b[1]) < l < max(a[1], b[1])]) +
+                      len([r for r in empty_lines if min(a[0], b[0]) < r < max(a[0], b[0])])) *
+                     (space_factor - 1)
+                     for i, a in enumerate(galaxies) for b in galaxies[i + 1:])
     return pairs_dist
 
 
@@ -63,7 +63,6 @@ def solve(puzzle_input):
     """Solve the puzzle for the given input."""
     data = parse(puzzle_input)
     solution1 = part2(data, 2)
-    data = parse(puzzle_input)
     solution2 = part2(data)
 
     return f"{solution1}", f"{solution2}"
