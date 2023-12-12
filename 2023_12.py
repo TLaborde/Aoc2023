@@ -22,7 +22,7 @@ def compute(springs, conditions):
         for ar in arrangements:
             s = rf'(?=([\?#]{{{re.escape(condition)}}})([^#]+|$))'
             for match in re.finditer(s, ar):
-                if len(ar) >= match.end(1) and "#" not in ar[0:max(0, match.start(1))]:
+                if "#" not in ar[0:max(0, match.start(1))]:
                     new_ar[ar[match.end(1) + 1::]] += arrangements[ar]
         arrangements = new_ar
 
