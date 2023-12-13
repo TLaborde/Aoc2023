@@ -18,7 +18,7 @@ def find_symmetry(map):
     for i in range(1, len(map)):
         if map[i-1] == map[i]:
             max_range = min(i-1, len(map)-1-i)
-            sym = all(map[i-j-1] == map[i+j] for j in range(1, max_range+1))
+            sym = all(map[i-j-2] == map[i+j+1] for j in range(max_range))
             if sym:
                 syms += i
     return syms
@@ -42,9 +42,9 @@ def find_almost_symmetry(map):
         if mirror:
             max_range = min(i-1, len(map)-1-i)
             sym = True
-            for j in range(1, max_range+1):
+            for j in range(max_range):
                 smudge_fixed, mirrored_line = almost_equal(
-                    map[i-j-1], map[i+j], smudge_fixed)
+                    map[i-j-2], map[i+j+1], smudge_fixed)
                 sym = sym and mirrored_line
             if sym and smudge_fixed:
                 syms += i
