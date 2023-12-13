@@ -10,17 +10,75 @@ puzzle = Puzzle(year=int(year), day=int(day))
 
 def parse(puzzle_input):
     """Parse input."""
-    return [int(line) for line in puzzle_input.split()]
+    return [line.split("\n") for line in puzzle_input.split("\n\n")]
+
+
+def find_symetry(map):
+    syms = 0
+    for i in range(1, len(map)):
+        if map[i-1] == map[i]:
+            max_range = min(i-1, len(map)-1-i)
+            sym = True
+            for j in range(1, max_range+1):
+                sym = sym and (map[i-j-1] == map[i+j])
+            if sym:
+                syms += i
+    return syms
+
+
+def almost_equal(a, b, smudge_fixed):
+    if a == b:
+        return smudge_fixed, True
+    if smudge_fixed:
+        return True, a == b
+    else:
+        if sum(1 for ca, cb in zip(a, b) if ca != cb) == 1:
+            return True, True
+        else:
+            return False, False
+
+
+def find_almost_symetry(map):
+    syms = 0
+    for i in range(1, len(map)):
+        smudge_fixed = False
+        smudge_fixed, mirror = almost_equal(map[i-1], map[i], smudge_fixed)
+        if mirror:
+            max_range = min(i-1, len(map)-1-i)
+            sym = True
+            for j in range(1, max_range+1):
+                smudge_fixed, mirrored_line = almost_equal(
+                    map[i-j-1], map[i+j], smudge_fixed)
+                sym = sym and mirrored_line
+            if sym and smudge_fixed:
+                syms += i
+    return syms
+
+
+def transpose(matrix):
+    return ["".join([str(matrix[i][j]) for i in range(len(matrix))]) for j in range(len(matrix[0]))]
 
 
 def part1(data):
     """Solve part 1."""
-    return None
+    total = 0
+    for map in data:
+        total += find_symetry(map) * 100
+        map = transpose(map)
+        total += find_symetry(map)
+
+    return total
 
 
 def part2(data):
     """Solve part 2."""
-    return None
+    total = 0
+    for map in data:
+        total += find_almost_symetry(map) * 100
+        map = transpose(map)
+        total += find_almost_symetry(map)
+
+    return total
 
 
 def solve(puzzle_input):
