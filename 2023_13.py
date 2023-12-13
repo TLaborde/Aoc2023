@@ -13,14 +13,12 @@ def parse(puzzle_input):
     return [line.split("\n") for line in puzzle_input.split("\n\n")]
 
 
-def find_symetry(map):
+def find_symmetry(map):
     syms = 0
     for i in range(1, len(map)):
         if map[i-1] == map[i]:
             max_range = min(i-1, len(map)-1-i)
-            sym = True
-            for j in range(1, max_range+1):
-                sym = sym and (map[i-j-1] == map[i+j])
+            sym = all(map[i-j-1] == map[i+j] for j in range(1, max_range+1))
             if sym:
                 syms += i
     return syms
@@ -31,14 +29,12 @@ def almost_equal(a, b, smudge_fixed):
         return smudge_fixed, True
     if smudge_fixed:
         return True, a == b
-    else:
-        if sum(1 for ca, cb in zip(a, b) if ca != cb) == 1:
-            return True, True
-        else:
-            return False, False
+    if sum(ca != cb for ca, cb in zip(a, b)) == 1:
+        return True, True
+    return False, False
 
 
-def find_almost_symetry(map):
+def find_almost_symmetry(map):
     syms = 0
     for i in range(1, len(map)):
         smudge_fixed = False
@@ -63,9 +59,9 @@ def part1(data):
     """Solve part 1."""
     total = 0
     for map in data:
-        total += find_symetry(map) * 100
+        total += find_symmetry(map) * 100
         map = transpose(map)
-        total += find_symetry(map)
+        total += find_symmetry(map)
 
     return total
 
@@ -74,9 +70,9 @@ def part2(data):
     """Solve part 2."""
     total = 0
     for map in data:
-        total += find_almost_symetry(map) * 100
+        total += find_almost_symmetry(map) * 100
         map = transpose(map)
-        total += find_almost_symetry(map)
+        total += find_almost_symmetry(map)
 
     return total
 
