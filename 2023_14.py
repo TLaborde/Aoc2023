@@ -1,7 +1,7 @@
 from aocd.models import Puzzle
 from aocd import submit
 import os
-
+from itertools import chain
 # import puzzle
 filename = os.path.basename(__file__)
 year, day = filename[:-3].split("_")[:2]
@@ -52,7 +52,7 @@ def part1(data):
 
 
 def m_transpose(matrix):
-    return [[str(matrix[i][j]) for i in range(len(matrix))] for j in range(len(matrix[0]))]
+    return [[matrix[i][j] for i in range(len(matrix))] for j in range(len(matrix[0]))]
 
 
 def roll(data):
@@ -83,30 +83,28 @@ def do_cycle(data):
     east = [list(reversed(r)) for r in east]
     return east
 
-    return data
-
 
 def part2(data):
     """Solve part 2."""
-    data = [[c for c in l] for l in data]
-    previous = list()
+    data = [list(row) for row in data]
+    previous = []
     result = ""
-    for i in range(1000000000):
+    for _ in range(1000000000):
         data = do_cycle(data)
-        result = "".join(cell for row in data for cell in row)
+        result = "".join(chain(*data))
         if result in previous:
+            cycle_begin_index = previous.index(result)
+            cycle_length = len(previous) - cycle_begin_index
+            final_index = ((1000000000 - cycle_begin_index) %
+                           cycle_length) + cycle_begin_index - 1
+            result = previous[final_index]
             break
         else:
             previous.append(result)
-    index = previous.index(result)
-    cycle_length = len(previous) - index
-    final_index = ((1000000000 - index) % cycle_length) + index - 1
-    print(previous[final_index])
-    print(len(previous), index, final_index)
-    s = previous[final_index]
-    s = [s[i:i + len(data[0])] for i in range(0, len(s), len(data[0]))]
 
+    s = [result[i:i+len(data[0])] for i in range(0, len(result), len(data[0]))]
     weight = calculate_weight(s)
+
     return weight
 
 
