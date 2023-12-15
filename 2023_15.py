@@ -1,7 +1,8 @@
 from aocd.models import Puzzle
 from aocd import submit
 import os
-
+from collections import defaultdict
+import functools
 # import puzzle
 filename = os.path.basename(__file__)
 year, day = filename[:-3].split("_")[:2]
@@ -10,17 +11,41 @@ puzzle = Puzzle(year=int(year), day=int(day))
 
 def parse(puzzle_input):
     """Parse input."""
-    return [int(line) for line in puzzle_input.split()]
+    return [line for line in puzzle_input.split(",")]
+
+
+def get_hash(s):
+    return functools.reduce(lambda h, c: ((h + ord(c)) * 17) % 256, s, 0)
 
 
 def part1(data):
     """Solve part 1."""
-    return None
+    return sum(get_hash(step) for step in data)
 
 
 def part2(data):
     """Solve part 2."""
-    return None
+    boxes = defaultdict(list)
+    for step in data:
+        if step[-1] == "-":
+            label = step[:-1]
+            hashed_label = get_hash(label)
+            existing_lense = [
+                l for l in boxes[hashed_label] if l[0] == label]
+            if existing_lense:
+                boxes[hashed_label].remove(existing_lense[0])
+        else:
+            label, focal_length = step.split("=")
+            hashed_label = get_hash(label)
+            existing_lense = [i for i, l in enumerate(
+                boxes[hashed_label]) if l[0] == label]
+            if existing_lense:
+                boxes[hashed_label][existing_lense[0]][1] = int(focal_length)
+            else:
+                boxes[hashed_label].append([label, int(focal_length)])
+
+    return sum((index+1) * (slot+1) *
+               lense[1] for index, lenses in boxes.items() for slot, lense in enumerate(lenses))
 
 
 def solve(puzzle_input):
