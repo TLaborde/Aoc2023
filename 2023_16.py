@@ -1,6 +1,14 @@
 from aocd.models import Puzzle
 import os
 
+from enum import Enum
+
+class Direction(Enum):
+    RIGHT = "r"
+    LEFT = "l"
+    UP = "u"
+    DOWN = "d"
+
 # import puzzle
 filename = os.path.basename(__file__)
 year, day = filename[:-3].split("_")[:2]
@@ -11,18 +19,21 @@ def parse(puzzle_input):
     """Parse input."""
     return [list(line) for line in puzzle_input.split()]
 
-def  try_move_beam(beam, max_length,max_height):
-    if beam[2] == "r":
-        beam[1] += 1
-    if beam[2] == "l":
-        beam[1] -= 1
-    if beam[2] == "u":
-        beam[0] -= 1
-    if beam[2] == "d":
-        beam[0] += 1
-    if 0 <=beam[0] <max_height and 0 <= beam[1] < max_length:
-        return beam
+def try_move_beam(beam, max_length, max_height):
+    x, y, direction = beam
+    if direction == 'r':
+        y += 1
+    elif direction == 'l':
+        y -= 1
+    elif direction == 'u':
+        x -= 1
+    elif direction == 'd':
+        x += 1
+
+    if 0 <= x < max_height and 0 <= y < max_length:
+        return [x, y, direction]
     return None
+
     
 def part1(data ,starter = [0,-1,'r']):
     """Solve part 1."""
@@ -31,6 +42,12 @@ def part1(data ,starter = [0,-1,'r']):
     beams = [starter]
     energized = []
     calculated = []
+    tile_directions = {
+        "-": ["l", "r"],
+        "|": ["u", "d"],
+        "/": {"r": "u", "u": "r", "l": "d", "d": "l"},
+        "\\": {"r": "d", "u": "l", "l": "u", "d": "r"}
+    }
     while beams:
         new_beams = []
         for beam in beams:
@@ -38,45 +55,19 @@ def part1(data ,starter = [0,-1,'r']):
                 continue
             else:
                 calculated.append(beam.copy())
-            if [beam[0],beam[1]] not in energized:
-                energized.append([beam[0],beam[1]])
+            if beam[:2] not in energized:
+                energized.append(beam[:2])
             beam = try_move_beam(beam, max_length,max_height)
             if beam:
                 tile = data[beam[0]][beam[1]]
-                if tile == ".":
+                if tile == "." or (beam[2] in tile_directions[tile] and tile in ["-","|"]):
                     new_beams.append(beam)
-                if tile == "-" and beam[2] in ["r","l"]:
-                    new_beams.append(beam)
-                    continue
-                if tile == "|" and beam[2] in ["u","d"]:
-                    new_beams.append(beam)
-                    continue
-                if tile == "-":
-                    new_beams.append([beam[0],beam[1],"l"])
-                    new_beams.append([beam[0],beam[1],"r"])
-                if tile == "|":
-                    new_beams.append([beam[0],beam[1],"u"])
-                    new_beams.append([beam[0],beam[1],"d"])
-                if tile == "/":
-                    if beam[2] == "r":
-                        new_beams.append([beam[0],beam[1],"u"])
-                    if beam[2] == "u":
-                        new_beams.append([beam[0],beam[1],"r"])
-                    if beam[2] == "l":
-                        new_beams.append([beam[0],beam[1],"d"])
-                    if beam[2] == "d":
-                        new_beams.append([beam[0],beam[1],"l"])
-                if tile == "\\":
-                    if beam[2] == "r":
-                        new_beams.append([beam[0],beam[1],"d"])
-                    if beam[2] == "u":
-                        new_beams.append([beam[0],beam[1],"l"])
-                    if beam[2] == "l":
-                        new_beams.append([beam[0],beam[1],"u"])
-                    if beam[2] == "d":
-                        new_beams.append([beam[0],beam[1],"r"])
+                else:
+                    if isinstance(tile_directions[tile], list):
+                        new_beams.extend([beam[0], beam[1], direction] for direction in tile_directions[tile])
+                    elif isinstance(tile_directions[tile], dict):
+                        new_beams.append([beam[0], beam[1], tile_directions[tile][beam[2]]])
         beams = new_beams
-    print (starter, len(energized) -1)
     return (len(energized) -1)
 
 
