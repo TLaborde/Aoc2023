@@ -70,15 +70,35 @@ def intersect(point, lines):
     return any((x1 == point[0] and min(y1, y2) <= point[1] <= max(y1, y2)) or (y1 == point[1] and min(y1, y2) <= point[1] <= max(y1, y2)) for (x1, y1, x2, y2) in lines)
 
 
+def calculate_showlace(vertices):
+    numberOfVertices = len(vertices)
+    sum1 = 0
+    sum2 = 0
+
+    for i in range(0, numberOfVertices-1):
+        sum1 = sum1 + vertices[i][0] * vertices[i+1][1]
+        sum2 = sum2 + vertices[i][1] * vertices[i+1][0]
+
+    # Add xn.y1
+    sum1 = sum1 + vertices[numberOfVertices-1][0]*vertices[0][1]
+    # Add x1.yn
+    sum2 = sum2 + vertices[0][0]*vertices[numberOfVertices-1][1]
+
+    area = abs(sum1 - sum2) / 2
+    return int(area)
+
+
 def part2(data):
     """Solve part 2."""
     start = (0, 0)  # x1,y1,x2,y2
     perimeter = [start]
+    sum_dist = 0
     for line in data:
         _, _, color = line.split()
         digitToColor = {'0': 'R', '1': 'D', '2': 'L', '3': 'U'}
         direction = digitToColor[color[-2]]
         distance = int(color[2:7], 16)
+        sum_dist += distance
         last = perimeter[-1]
         if direction == 'R':
             perimeter.append((last[0] + int(distance), last[1]))
@@ -89,81 +109,7 @@ def part2(data):
         if direction == 'U':
             perimeter.append((last[0], last[1] - int(distance)))
 
-    all_x = sorted(set(p[0] for p in perimeter))
-    all_y = sorted(set(p[1] for p in perimeter))
-    x_lenghts = [1]
-    for i, x in enumerate(all_x[1:]):
-        x_lenghts.extend([x-all_x[i]-1, 1])
-    y_lengths = [1]
-    for j, y in enumerate(all_y[1:]):
-        y_lengths.extend([y-all_y[j]-1, 1])
-    area = {}
-    for i, x in enumerate(x_lenghts):
-        for j, y in enumerate(y_lengths):
-            area[(i, j)] = x*y
-
-    big_to_small = {}
-    for i, x in enumerate(all_x):
-        for j, y in enumerate(all_y):
-            big_to_small[(x, y)] = (2*i, 2*j)
-    grid = [(0, 0)]
-    for l, line in enumerate(data):
-        _, _, color = line.split()
-        digitToColor = {'0': 'R', '1': 'D', '2': 'L', '3': 'U'}
-        direction = digitToColor[color[-2]]
-        distance = int(color[2:7], 16)
-        last = grid[-1]
-        next = big_to_small[perimeter[l+1]]
-
-        if direction == 'R':
-            distance = next[0] - last[0]
-            for i in range(distance):
-                grid.append((last[0] + 1 + i, last[1]))
-        if direction == 'L':
-            distance = next[0] - last[0]
-            for i in range(-distance):
-                grid.append((last[0] - 1 - i, last[1]))
-        if direction == 'D':
-            distance = next[1] - last[1]
-            for i in range(int(distance)):
-                grid.append((last[0], last[1] + 1 + i))
-        if direction == 'U':
-            distance = next[1] - last[1]
-            for i in range(-distance):
-                grid.append((last[0], last[1] - 1 - i))
-
-    min_x = min(c[0] for c in grid)
-    max_x = max(c[0] for c in grid)
-    min_y = min(c[1] for c in grid)
-    max_y = max(c[1] for c in grid)
-
-    # need to do a flood fill from all external side
-    outside = set()
-    to_check = deque()
-    for j in range(min_y, max_y+1):
-        if (min_x, j) not in grid:
-            to_check.append((min_x, j))
-        if (max_x, j) not in grid:
-            to_check.append((max_x, j))
-    for i in range(min_x+1, max_x):
-        if (i, min_y)not in grid:
-            to_check.append((i, min_y))
-        if (i, max_y)not in grid:
-            to_check.append((i, max_y))
-    while to_check:
-        print(len(to_check))
-        coords = to_check.pop()
-        outside.add(coords)
-
-        neighbours = [(coords[0]-1, coords[1]), (coords[0]+1, coords[1]),
-                      (coords[0], coords[1]-1), (coords[0], coords[1]+1)]
-        for n in neighbours:
-            if is_valid(n, min_x, max_x, min_y, max_y) and n not in to_check and n not in grid and n not in outside:
-                to_check.append(n)
-    outside_area = sum(area[box] for box in outside)
-    total_area = (all_x[-1] - all_x[0] + 1) * (all_y[-1] - all_y[0] + 1)
-    result = total_area - outside_area
-    return total_area - outside_area
+    return int(calculate_showlace(perimeter)+(sum_dist/2)+1)
 
 
 def solve(puzzle_input):
