@@ -113,11 +113,11 @@ def part2(data):
                 machine[n] = Module(n + " -> ")
             if machine[n].type == "conj":
                 machine[n].memory[m.name] = Pulse.LOW
-            print(f"{m.name} --> {n}")
+            #print(f"{m.name} --> {n}")
     actions = deque()
     p_count = 0
     importants = ["rv","vp","dc", "cq"]
-    lopps = []
+    loops = []
     while importants:
         actions.append(("button","broadcaster",Pulse.LOW))
         p_count += 1
@@ -129,10 +129,9 @@ def part2(data):
                     if n != '':                            
                         actions.append((target, n, res))
                         if target in importants and res == Pulse.HIGH:
-                            lopps.append(p_count)
-                            print(p_count)
+                            loops.append(p_count)
                             importants.remove(target)
-    return lcm(*lopps)
+    return lcm(*loops)
         
 
 
