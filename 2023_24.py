@@ -92,8 +92,6 @@ def part2(data):
     s.check()
     r = s.model()
     coord = [r[coord].as_long() for coord in [x, y, z]]
-    print(coord)
-    print(sum(coord))
     return sum(coord)
 
 
