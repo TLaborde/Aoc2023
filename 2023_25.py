@@ -1,7 +1,7 @@
 from aocd.models import Puzzle
 from aocd import submit
 import os
-
+import networkx as nx
 # import puzzle
 filename = os.path.basename(__file__)
 year, day = filename[:-3].split("_")[:2]
@@ -10,12 +10,21 @@ puzzle = Puzzle(year=int(year), day=int(day))
 
 def parse(puzzle_input):
     """Parse input."""
-    return [int(line) for line in puzzle_input.split()]
+    return [line for line in puzzle_input.split("\n")]
 
 
 def part1(data):
     """Solve part 1."""
-    return None
+    # make graph
+    G = nx.Graph()
+    for line in data:
+        source, dests = line.split(": ")
+        for d in dests.split(" "):
+            G.add_edge(source,d)
+    cut = nx.minimum_edge_cut(G)
+    G.remove_edges_from(cut)
+    vars = [len(c) for c in sorted(nx.connected_components(G), key=len, reverse=True)]
+    return vars[0]*vars[1]
 
 
 def part2(data):
@@ -34,7 +43,20 @@ def solve(puzzle_input):
 
 if __name__ == "__main__":
     for example in puzzle.examples:
-        result_a, result_b = solve(example.input_data)
+        data ="""jqt: rhn xhk nvd
+rsh: frs pzl lsr
+xhk: hfx
+cmg: qnr nvd lhk bvb
+rhn: xhk bvb hfx
+bvb: xhk hfx
+pzl: lsr hfx nvd
+qnr: nvd
+ntq: jqt hfx bvb xhk
+nvd: lhk
+lsr: lhk
+rzs: qnr cmg lsr rsh
+frs: qnr lhk lsr"""
+        result_a, result_b = solve(data)
         if result_a != example.answer_a:
             print(f"Expected {example.answer_a}, got {result_a}")
             raise ValueError("Test case failed for Part A")
